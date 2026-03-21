@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beta Control de Atrasos</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--dark:#0f172a;--green:#dcfce7;--green-t:#166534;--yellow:#fef3c7;--yellow-t:#92400e;--orange:#ffedd5;--orange-t:#9a3412;--red:#fee2e2;--red-t:#b91c1c;}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px} h1{margin:0 0 6px;font-size:30px} .sub{color:var(--muted)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 24px}.tab{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:14px;cursor:pointer}.tab.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+    .grid{display:grid;gap:18px}.g2{grid-template-columns:2fr 1fr}.gstats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    label{display:block;font-weight:600;font-size:14px;margin-bottom:8px} input,select,button{font:inherit} input{width:100%;padding:13px 14px;border:1px solid #cbd5e1;border-radius:16px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn{background:var(--dark);color:#fff;border:none;padding:12px 16px;border-radius:16px;cursor:pointer}.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:700}.normal{background:var(--green);color:var(--green-t)}.a{background:var(--yellow);color:var(--yellow-t)}.b{background:var(--orange);color:var(--orange-t)}.c{background:var(--red);color:var(--red-t)}
+    table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:12px 8px;border-bottom:1px solid #f1f5f9;text-align:left;vertical-align:top} th{color:var(--muted);font-weight:600}
+    .hidden{display:none}.muted{color:var(--muted)} .stat{font-size:30px;font-weight:800;margin-top:8px}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.small{font-size:13px}
+    @media (max-width:800px){.g2,.row{grid-template-columns:1fr}.wrap{padding:16px}h1{font-size:26px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Control de atrasos</h1>
+    <div class="sub">Beta web para portería e inspectoría</div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="porteria">Portería</button>
+      <button class="tab" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="estudiantes">Estudiantes</button>
+      <button class="tab" data-tab="reporte">Informe final</button>
+    </div>
+
+    <section id="porteria" class="panel">
+      <div class="grid g2">
+        <div class="card">
+          <h2>Registro rápido de ingreso</h2>
+          <p class="sub">Ingreso por RUT con clasificación automática A / B / C.</p>
+          <div class="row">
+            <div>
+              <label>RUT del estudiante</label>
+              <input id="rutInput" placeholder="Ej: 21.345.678-9" />
+            </div>
+            <div>
+              <label>Hora de ingreso</label>
+              <input id="timeInput" type="time" value="08:17" />
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn" id="registerBtn">Registrar ingreso</button>
+            <span class="small muted">A: 08:10-08:20 · B: 08:21-08:30 · C: 08:31+</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Resultado</h3>
+          <div id="resultBox" class="muted" style="margin-top:12px">Todavía no hay registro.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="panel hidden"></section>
+    <section id="estudiantes" class="panel hidden"></section>
+    <section id="reporte" class="panel hidden"></section>
+  </div>
+
+<script>
+const students=[
+{id:1,rut:"21.345.678-9",nombre:"Martina González",curso:"7° Básico A",apoderado:"Paula Rojas",correo:"paula.rojas@ejemplo.cl",atrasos:["A","B","A","C"]},
+{id:2,rut:"20.112.334-5",nombre:"Tomás Herrera",curso:"1° Medio B",apoderado:"Sergio Herrera",correo:"sergio.herrera@ejemplo.cl",atrasos:["A","A"]},
+{id:3,rut:"19.876.543-2",nombre:"Florencia Pizarro",curso:"8° Básico C",apoderado:"Marcela Pizarro",correo:"marcela.pizarro@ejemplo.cl",atrasos:["B","C","C","A","B"]},
+{id:4,rut:"22.456.111-7",nombre:"Benjamín Soto",curso:"6° Básico A",apoderado:"Andrea Soto",correo:"andrea.soto@ejemplo.cl",atrasos:[]},
+];
+let state=JSON.parse(JSON.stringify(students));
+function cls(time){
+  if(!time) return {estado:'Sin hora',categoria:null,klass:''};
+  if(time<'08:10') return {estado:'Ingreso normal',categoria:null,klass:'normal'};
+  if(time>='08:10'&&time<='08:20') return {estado:'Atraso',categoria:'A',klass:'a'};
+  if(time>='08:21'&&time<='08:30') return {estado:'Atraso',categoria:'B',klass:'b'};
+  return {estado:'Atraso',categoria:'C',klass:'c'};
+}
+function stats(){let a=0,b=0,c=0,total=0;state.forEach(s=>s.atrasos.forEach(x=>{total++;if(x==='A')a++;if(x==='B')b++;if(x==='C')c++;}));return {total,a,b,c,reincidentes:state.filter(s=>s.atrasos.length>3).length}}
+function renderDashboard(){const st=stats();document.getElementById('dashboard').innerHTML=`<div class="grid gstats">${[['Total atrasos',st.total],['Categoría A',st.a],['Categoría B',st.b],['Categoría C',st.c],['Reincidentes +3',st.reincidentes]].map(([l,v])=>`<div class="card"><div class="muted small">${l}</div><div class="stat">${v}</div></div>`).join('')}</div>`}
+function renderStudents(filter=''){const q=filter.toLowerCase(); const data=state.filter(s=>!q||s.nombre.toLowerCase().includes(q)||s.rut.toLowerCase().includes(q)||s.curso.toLowerCase().includes(q));document.getElementById('estudiantes').innerHTML=`<div class="card"><div class="toolbar"><div><h2>Base de estudiantes</h2><div class="sub">Datos de ejemplo para revisar el flujo</div></div><input id="searchInput" placeholder="Buscar por nombre, RUT o curso" style="max-width:320px" value="${filter.replaceAll('"','&quot;')}" /></div><div style="overflow:auto;margin-top:16px"><table><thead><tr><th>RUT</th><th>Nombre</th><th>Curso</th><th>Apoderado</th><th>Correo</th><th>Atrasos</th></tr></thead><tbody>${data.map(s=>`<tr><td>${s.rut}</td><td><strong>${s.nombre}</strong></td><td>${s.curso}</td><td>${s.apoderado}</td><td>${s.correo}</td><td><span class="pill ${s.atrasos.length>3?'c':'normal'}">${s.atrasos.length}</span></td></tr>`).join('')}</tbody></table></div></div>`;document.getElementById('searchInput').oninput=e=>renderStudents(e.target.value)}
+function renderReport(){const data=state.filter(s=>s.atrasos.length>3);document.getElementById('reporte').innerHTML=`<div class="card"><div class="toolbar"><div><h2>Informe de estudiantes con más de 3 atrasos</h2><div class="sub">Lista útil para inspectoría y correos a apoderados</div></div><button class="btn" id="copyBtn">Copiar correos</button></div><div style="overflow:auto;margin-top:16px"><table><thead><tr><th>Estudiante</th><th>RUT</th><th>Curso</th><th>Atrasos</th><th>Apoderado</th><th>Correo</th><th>Detalle</th></tr></thead><tbody>${data.length?data.map(s=>`<tr><td><strong>${s.nombre}</strong></td><td>${s.rut}</td><td>${s.curso}</td><td><span class="pill c">${s.atrasos.length}</span></td><td>${s.apoderado}</td><td>${s.correo}</td><td>${s.atrasos.join(', ')}</td></tr>`).join(''):`<tr><td colspan="7" class="muted">No hay reincidentes.</td></tr>`}</tbody></table></div></div>`;const btn=document.getElementById('copyBtn'); if(btn) btn.onclick=async()=>{const txt=data.map(s=>s.correo).join(', '); try{await navigator.clipboard.writeText(txt); alert('Correos copiados');}catch(e){alert(txt||'No hay correos para copiar');}}}
+function showResult(html){document.getElementById('resultBox').innerHTML=html}
+function register(){const rut=document.getElementById('rutInput').value.trim().toLowerCase(); const time=document.getElementById('timeInput').value; const student=state.find(s=>s.rut.toLowerCase()===rut); if(!student){showResult('<div class="pill c">No encontrado</div><div style="margin-top:10px">RUT no encontrado en la base.</div>'); return;} const r=cls(time); if(r.categoria) student.atrasos.push(r.categoria); showResult(`<div class="pill ${r.klass}">${r.categoria?`Atraso ${r.categoria}`:'Ingreso normal'}</div><div style="margin-top:12px"><strong>${student.nombre}</strong></div><div class="small muted">${student.curso} · ${time}</div><div style="margin-top:8px">${r.categoria?`Registro guardado como atraso tipo ${r.categoria}.`:'Registro guardado como ingreso normal.'}</div>`); document.getElementById('rutInput').value=''; renderDashboard(); renderStudents(); renderReport();}
+function setTab(name){document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden')); document.getElementById(name).classList.remove('hidden'); document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
+document.getElementById('registerBtn').onclick=register; renderDashboard(); renderStudents(); renderReport();
+</script>
+</body>
+</html>
