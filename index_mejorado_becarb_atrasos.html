@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Becarb | Control de Atrasos Beta</title>
+  <style>
+    :root {
+      --becarb-blue: #49b6de;
+      --becarb-deep: #1d74b7;
+      --becarb-slate: #5f6570;
+      --bg: #eef6fb;
+      --card: rgba(255,255,255,0.92);
+      --line: rgba(30, 116, 183, 0.12);
+      --success: #0b9f6b;
+      --warning: #d28e08;
+      --danger: #d63649;
+      --text: #1d2430;
+      --muted: #667085;
+      --shadow: 0 18px 40px rgba(14, 34, 60, 0.12);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(73,182,222,0.18), transparent 28%),
+        linear-gradient(180deg, #f8fbfd 0%, var(--bg) 100%);
+    }
+
+    body { min-height: 100vh; }
+
+    .shell {
+      width: min(1180px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 18px 0 36px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero-card, .panel {
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -50px;
+      top: -60px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(73,182,222,0.24), transparent 68%);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand img {
+      width: 180px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(29,116,183,0.08);
+      color: var(--becarb-deep);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4.2vw, 44px);
+      line-height: 1.04;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 56ch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .side-hero {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .clock {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(29,116,183,0.08), rgba(73,182,222,0.12));
+      border: 1px solid rgba(29,116,183,0.12);
+    }
+
+    .clock .label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--becarb-deep);
+      margin-bottom: 8px;
+    }
+
+    .clock .time {
+      font-size: clamp(30px, 5vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 6px;
+    }
+
+    .mini-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .panel-sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .flow span {
+      background: #f4f7fb;
+      border: 1px solid #e4edf6;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .entry-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .entry-box {
+      border: 1px solid #e4edf6;
+      background: #fbfdff;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .entry-box h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .entry-box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field {
+      margin-top: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .rut-display {
+      width: 100%;
+      min-height: 72px;
+      border-radius: 20px;
+      border: 1px solid #d8e4ef;
+      background: #fff;
+      padding: 16px 18px;
+      font-size: clamp(28px, 7vw, 38px);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--becarb-deep);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .helper-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .helper {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .btn, .chip {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      font: inherit;
+    }
+
+    .btn:hover, .chip:hover { transform: translateY(-1px); }
+    .btn:active, .chip:active { transform: translateY(0); }
+
+    .btn {
+      border-radius: 16px;
+      padding: 13px 16px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--becarb-deep), var(--becarb-blue));
+      color: white;
+      box-shadow: 0 10px 24px rgba(29,116,183,0.22);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--becarb-deep);
+      border: 1px solid #d5e5f3;
+    }
+
+    .btn-ghost {
+      background: #f4f7fb;
+      color: var(--text);
+      border: 1px solid #e4edf6;
+    }
+
+    .btn-danger {
+      background: #fff2f4;
+      color: var(--danger);
+      border: 1px solid rgba(214,54,73,0.15);
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .key {
+      min-height: 68px;
+      border-radius: 18px;
+      border: 1px solid #dce8f3;
+      background: white;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: 0 10px 20px rgba(16, 36, 62, 0.06);
+    }
+
+    .key.special {
+      font-size: 16px;
+      color: var(--becarb-deep);
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .scan-box {
+      display: none;
+      margin-top: 14px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #d9e7f2;
+      background: #0f1721;
+      position: relative;
+    }
+
+    .scan-box.active { display: block; }
+
+    #qrVideo {
+      width: 100%;
+      display: block;
+      background: #091018;
+      min-height: 260px;
+      object-fit: cover;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .scan-frame {
+      width: min(72vw, 280px);
+      height: min(72vw, 280px);
+      border: 3px solid rgba(255,255,255,0.8);
+      border-radius: 24px;
+      box-shadow: 0 0 0 999px rgba(0,0,0,0.22);
+    }
+
+    .scan-note {
+      padding: 12px 14px;
+      background: rgba(9,16,24,0.84);
+      color: rgba(255,255,255,0.9);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      border: 1px solid transparent;
+    }
+
+    .status.show { display: block; }
+    .status.success { background: #ecfbf6; border-color: rgba(11,159,107,0.18); }
+    .status.error { background: #fff3f5; border-color: rgba(214,54,73,0.18); }
+    .status.info { background: #eef7fd; border-color: rgba(29,116,183,0.14); }
+
+    .student-card {
+      margin-top: 16px;
+      display: none;
+      border: 1px solid #dbe8f4;
+      border-radius: 20px;
+      background: white;
+      padding: 16px;
+      box-shadow: 0 10px 22px rgba(16, 36, 62, 0.06);
+    }
+
+    .student-card.show { display: block; }
+
+    .student-head {
+      display: flex;
+      gap: 14px;
+      align-items: start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .student-name {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .student-meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .pill.normal { background: #edf9f4; color: var(--success); }
+    .pill.a { background: #fff7df; color: var(--warning); }
+    .pill.b { background: #fff0df; color: #b76a00; }
+    .pill.c { background: #fff1f3; color: var(--danger); }
+    .pill.alert { background: rgba(214,54,73,0.12); color: var(--danger); }
+
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-card {
+      background: #f8fbfd;
+      border: 1px solid #e5eef6;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .mini-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .mini-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid #e3edf6;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat .k {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .stat .v {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .rule-box {
+      border: 1px dashed rgba(29,116,183,0.24);
+      background: linear-gradient(135deg, rgba(29,116,183,0.04), rgba(73,182,222,0.06));
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .rule-box ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .sample-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: white;
+      border-radius: 999px;
+      border: 1px solid #d8e6f2;
+      padding: 10px 12px;
+      color: var(--becarb-deep);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid #e3edf6;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eef3f8;
+      font-size: 14px;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #fbfdff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .report-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .badge-inline {
+      display: inline-flex;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #eef7fd;
+      color: var(--becarb-deep);
+    }
+
+    .empty {
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .strong-danger { color: var(--danger); font-weight: 800; }
+
+    @media (max-width: 980px) {
+      .hero, .grid {
+        grid-template-columns: 1fr;
+      }
+      .student-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100vw - 16px, 1180px); }
+      .hero-card, .panel { border-radius: 22px; }
+      .hero-card, .panel, .side-hero { padding: 16px; }
+      .student-grid, .stats-grid { grid-template-columns: 1fr 1fr; }
+      .helper-row { align-items: stretch; }
+      .btn { width: 100%; }
+      .qr-wrap .btn { width: calc(50% - 5px); }
+      .key { min-height: 60px; }
+      .brand img { width: 150px; }
+      .panel-title { font-size: 18px; }
+    }
+
+    @media (max-width: 460px) {
+      .student-grid, .stats-grid { grid-template-columns: 1fr; }
+      .qr-wrap .btn { width: 100%; }
+      .mini-card { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <article class="hero-card">
+        <div>
+          <div class="brand">
+            <img src="https://becarb.cl/wp-content/uploads/2019/10/logoweb_becarb_trans.png" alt="Logo Becarb" />
+          </div>
+          <span class="tag">Beta demo · Control de atrasos</span>
+          <h1>Ingreso rápido por RUT o QR, con hora automática del sistema.</h1>
+          <p>
+            Esta versión de demostración simula el flujo de portería: lectura de RUT sin dígito verificador,
+            cruce con la base de estudiantes, bloqueo de duplicados en el día, conteo mensual de atrasos y
+            preparación del informe final con notificación simulada al correo del alumno.
+          </p>
+        </div>
+      </article>
+
+      <aside class="hero-card side-hero">
+        <div class="clock">
+          <div class="label">Hora oficial del sistema</div>
+          <div class="time" id="liveClock">--:--:--</div>
+          <div class="mini-note" id="liveDate">Cargando fecha…</div>
+        </div>
+        <div class="mini-note">
+          <strong>Reglas activas del beta:</strong><br>
+          Categoría A de 08:10 a 08:20 · Categoría B de 08:21 a 08:30 · Categoría C desde 08:31.<br>
+          El conteo se acumula por mes calendario.
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Portería</h2>
+            <p class="panel-sub">Ingresa el RUT numérico o escanea el QR. La hora se toma automáticamente del equipo.</p>
+          </div>
+          <span class="badge-inline" id="monthBadge">Periodo actual</span>
+        </div>
+
+        <div class="flow">
+          <span>1. Leer RUT</span>
+          <span>2. Buscar alumno</span>
+          <span>3. Guardar ingreso</span>
+          <span>4. Contar atrasos</span>
+          <span>5. Alertar sobre 3</span>
+        </div>
+
+        <div class="entry-wrap">
+          <div class="entry-box">
+            <h3>Ingreso manual</h3>
+            <p>Se digita solo la parte numérica del RUT. Sin puntos, sin guion, sin dígito verificador.</p>
+
+            <div class="field">
+              <label for="rutInput">RUT numérico</label>
+              <input
+                id="rutInput"
+                class="rut-display"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="8"
+                autocomplete="off"
+                placeholder="21345678"
+                readonly
+              />
+            </div>
+
+            <div class="helper-row">
+              <div class="helper">El teclado visual deja botones grandes para uso rápido en portería.</div>
+              <button class="btn btn-secondary" id="registerButton">Registrar ingreso</button>
+            </div>
+
+            <div class="keypad" id="keypad"></div>
+
+            <div class="qr-wrap">
+              <button class="btn btn-primary" id="scanButton">📷 Escanear QR</button>
+              <button class="btn btn-ghost" id="clearButton">Limpiar</button>
+            </div>
+
+            <div class="scan-box" id="scanBox">
+              <video id="qrVideo" playsinline muted></video>
+              <div class="scan-overlay"><div class="scan-frame"></div></div>
+              <div class="scan-note" id="scanNote">
+                Apunta la cámara al QR que contiene solo el número de RUT. Si el navegador no soporta lectura QR,
+                usa la digitación manual.
+              </div>
+            </div>
+
+            <div class="status" id="statusBox"></div>
+
+            <div class="student-card" id="studentCard">
+              <div class="student-head">
+                <div>
+                  <h3 class="student-name" id="studentName">—</h3>
+                  <div class="student-meta" id="studentMeta">—</div>
+                </div>
+                <div id="categoryPill" class="pill normal">Ingreso normal</div>
+              </div>
+              <div class="student-grid">
+                <div class="mini-card">
+                  <div class="mini-label">Correo</div>
+                  <div class="mini-value" id="studentEmail">—</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Hora registrada</div>
+                  <div class="mini-value" id="studentTime">—</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Atrasos del mes</div>
+                  <div class="mini-value" id="studentLateCount">0</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Estado</div>
+                  <div class="mini-value" id="studentStatus">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Resumen operativo</h2>
+            <p class="panel-sub">Lo que vería inspectoría en un cierre rápido de jornada.</p>
+          </div>
+        </div>
+
+        <div class="rule-box">
+          <strong>Lógica del beta</strong>
+          <ul>
+            <li>La hora se obtiene automáticamente del sistema.</li>
+            <li>El cruce se hace con la base demo de estudiantes.</li>
+            <li>Si el alumno ya fue registrado hoy, se bloquea el duplicado.</li>
+            <li>La alerta aparece cuando supera 3 atrasos en el mes.</li>
+            <li>El envío de correo está simulado en esta etapa.</li>
+          </ul>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="entry-box">
+          <h3>RUT demo para pruebas</h3>
+          <p>Tócalos para autocompletar el ingreso. Todos están guardados con RUT completo en la base interna.</p>
+          <div class="sample-list" id="sampleList"></div>
+        </div>
+
+        <div class="footer-note">
+          Esta demo guarda los movimientos del mes en el navegador del dispositivo usando almacenamiento local. Es ideal para revisar el flujo, no para operación real.
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-bottom:18px;">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Registros recientes del día</h2>
+          <p class="panel-sub">Se muestran los ingresos tomados hoy, normales y con atraso.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>RUT</th>
+              <th>Alumno</th>
+              <th>Curso</th>
+              <th>Estado</th>
+              <th>Categoría</th>
+              <th>Correo</th>
+            </tr>
+          </thead>
+          <tbody id="todayTableBody">
+            <tr><td colspan="7" class="empty">Todavía no hay registros hoy.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Informe mensual · alumnos con más de 3 atrasos</h2>
+          <p class="panel-sub">Desde aquí se exportan los correos y se simula la notificación final.</p>
+        </div>
+      </div>
+
+      <div class="report-actions">
+        <button class="btn btn-secondary" id="copyEmailsButton">Copiar correos</button>
+        <button class="btn btn-secondary" id="exportEmailsButton">Exportar CSV</button>
+        <button class="btn btn-primary" id="simulateSendButton">Enviar notificación simulada</button>
+        <button class="btn btn-danger" id="resetMonthButton">Reiniciar demo mensual</button>
+      </div>
+
+      <div class="status info show" id="reportStatusBox">
+        El informe toma el mes actual del sistema y reúne a los alumnos que superan tres atrasos.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>RUT completo</th>
+              <th>Curso</th>
+              <th>Correo</th>
+              <th>Atrasos mes</th>
+              <th>Detalle</th>
+              <th>Notificación</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr><td colspan="7" class="empty">Aún no hay alumnos sobre el umbral mensual.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const students = [
+      { id: 1, rutFull: '21.345.678-9', rutNumber: '21345678', nombres: 'Martina', apellidos: 'González Rojas', curso: '7° Básico A', email: 'martina.gonzalez@becarb.demo' },
+      { id: 2, rutFull: '20.112.334-5', rutNumber: '20112334', nombres: 'Tomás', apellidos: 'Herrera Silva', curso: '1° Medio B', email: 'tomas.herrera@becarb.demo' },
+      { id: 3, rutFull: '19.876.543-2', rutNumber: '19876543', nombres: 'Florencia', apellidos: 'Pizarro Vega', curso: '8° Básico C', email: 'florencia.pizarro@becarb.demo' },
+      { id: 4, rutFull: '22.456.111-7', rutNumber: '22456111', nombres: 'Benjamín', apellidos: 'Soto Pérez', curso: '6° Básico A', email: 'benjamin.soto@becarb.demo' },
+      { id: 5, rutFull: '24.555.122-8', rutNumber: '24555122', nombres: 'Catalina', apellidos: 'Araya Morales', curso: '2° Medio A', email: 'catalina.araya@becarb.demo' },
+      { id: 6, rutFull: '23.102.884-3', rutNumber: '23102884', nombres: 'Vicente', apellidos: 'Navarro Díaz', curso: '5° Básico B', email: 'vicente.navarro@becarb.demo' }
+    ];
+
+    const rutInput = document.getElementById('rutInput');
+    const keypad = document.getElementById('keypad');
+    const statusBox = document.getElementById('statusBox');
+    const studentCard = document.getElementById('studentCard');
+    const registerButton = document.getElementById('registerButton');
+    const clearButton = document.getElementById('clearButton');
+    const sampleList = document.getElementById('sampleList');
+    const statsGrid = document.getElementById('statsGrid');
+    const todayTableBody = document.getElementById('todayTableBody');
+    const reportTableBody = document.getElementById('reportTableBody');
+    const reportStatusBox = document.getElementById('reportStatusBox');
+    const copyEmailsButton = document.getElementById('copyEmailsButton');
+    const exportEmailsButton = document.getElementById('exportEmailsButton');
+    const simulateSendButton = document.getElementById('simulateSendButton');
+    const resetMonthButton = document.getElementById('resetMonthButton');
+    const monthBadge = document.getElementById('monthBadge');
+    const scanButton = document.getElementById('scanButton');
+    const scanBox = document.getElementById('scanBox');
+    const scanNote = document.getElementById('scanNote');
+    const qrVideo = document.getElementById('qrVideo');
+
+    const STORAGE_PREFIX = 'becarb-atrasos-demo';
+    let activeStream = null;
+    let scanLoopActive = false;
+
+    const monthKey = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    };
+
+    const storageKey = () => `${STORAGE_PREFIX}:${monthKey()}`;
+
+    const loadState = () => {
+      const raw = localStorage.getItem(storageKey());
+      if (!raw) return { records: [], notifications: [] };
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          records: Array.isArray(parsed.records) ? parsed.records : [],
+          notifications: Array.isArray(parsed.notifications) ? parsed.notifications : []
+        };
+      } catch {
+        return { records: [], notifications: [] };
+      }
+    };
+
+    const saveState = (state) => localStorage.setItem(storageKey(), JSON.stringify(state));
+
+    const formatDateLong = (date) => date.toLocaleDateString('es-CL', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const formatTime = (date) => date.toLocaleTimeString('es-CL', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+
+    const formatHourMinute = (date) => date.toLocaleTimeString('es-CL', {
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    const getDateKey = (date) => date.toISOString().slice(0, 10);
+
+    const sanitizeRutNumber = (value) => (value || '').replace(/\D/g, '').slice(0, 8);
+
+    const classifyEntry = (date) => {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const total = hours * 60 + minutes;
+      if (total < 490) {
+        return { estado: 'normal', categoria: null, label: 'Ingreso normal', pillClass: 'normal' };
+      }
+      if (total >= 490 && total <= 500) {
+        return { estado: 'atraso', categoria: 'A', label: 'Atraso tipo A', pillClass: 'a' };
+      }
+      if (total >= 501 && total <= 510) {
+        return { estado: 'atraso', categoria: 'B', label: 'Atraso tipo B', pillClass: 'b' };
+      }
+      return { estado: 'atraso', categoria: 'C', label: 'Atraso tipo C', pillClass: 'c' };
+    };
+
+    const monthLateCountForStudent = (studentId, state) =>
+      state.records.filter(r => r.studentId === studentId && r.estado === 'atraso').length;
+
+    const hasDuplicateToday = (studentId, dateKey, state) =>
+      state.records.some(r => r.studentId === studentId && r.dateKey === dateKey);
+
+    const getTodayRecords = (state) => {
+      const todayKey = getDateKey(new Date());
+      return state.records.filter(r => r.dateKey === todayKey)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    };
+
+    const getMonthlyReport = (state) => {
+      const map = new Map();
+      state.records
+        .filter(r => r.estado === 'atraso')
+        .forEach(record => {
+          if (!map.has(record.studentId)) {
+            map.set(record.studentId, {
+              studentId: record.studentId,
+              nombre: record.nombre,
+              rutFull: record.rutFull,
+              curso: record.curso,
+              email: record.email,
+              count: 0,
+              detalle: { A: 0, B: 0, C: 0 }
+            });
+          }
+          const entry = map.get(record.studentId);
+          entry.count += 1;
+          if (record.categoria) entry.detalle[record.categoria] += 1;
+        });
+      return Array.from(map.values()).filter(x => x.count > 3).sort((a, b) => b.count - a.count || a.nombre.localeCompare(b.nombre));
+    };
+
+    const renderStatus = (message, type = 'info') => {
+      statusBox.className = `status show ${type}`;
+      statusBox.innerHTML = message;
+    };
+
+    const clearStatus = () => {
+      statusBox.className = 'status';
+      statusBox.textContent = '';
+    };
+
+    const renderStudentCard = (record, count) => {
+      const pill = document.getElementById('categoryPill');
+      const name = document.getElementById('studentName');
+      const meta = document.getElementById('studentMeta');
+      const email = document.getElementById('studentEmail');
+      const time = document.getElementById('studentTime');
+      const lateCount = document.getElementById('studentLateCount');
+      const status = document.getElementById('studentStatus');
+
+      name.textContent = record.nombre;
+      meta.textContent = `${record.curso} · RUT completo ${record.rutFull}`;
+      email.textContent = record.email;
+      time.textContent = record.time;
+      lateCount.textContent = String(count);
+      status.textContent = record.label;
+      pill.className = `pill ${record.pillClass}`;
+      pill.textContent = record.label;
+      studentCard.classList.add('show');
+    };
+
+    const renderStats = () => {
+      const state = loadState();
+      const today = getTodayRecords(state);
+      const monthlyLates = state.records.filter(r => r.estado === 'atraso');
+      const a = monthlyLates.filter(r => r.categoria === 'A').length;
+      const b = monthlyLates.filter(r => r.categoria === 'B').length;
+      const c = monthlyLates.filter(r => r.categoria === 'C').length;
+      const alertCount = getMonthlyReport(state).length;
+      const stats = [
+        ['Ingresos hoy', today.length],
+        ['Atrasos del mes', monthlyLates.length],
+        ['Categoría A', a],
+        ['Categoría B', b],
+        ['Categoría C', c],
+        ['Alumnos sobre 3', alertCount]
+      ];
+      statsGrid.innerHTML = stats.map(([k, v]) => `
+        <div class="stat">
+          <div class="k">${k}</div>
+          <div class="v">${v}</div>
+        </div>
+      `).join('');
+    };
+
+    const renderTodayTable = () => {
+      const state = loadState();
+      const rows = getTodayRecords(state);
+      if (!rows.length) {
+        todayTableBody.innerHTML = '<tr><td colspan="7" class="empty">Todavía no hay registros hoy.</td></tr>';
+        return;
+      }
+      todayTableBody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.time}</td>
+          <td>${r.rutFull}</td>
+          <td>${r.nombre}</td>
+          <td>${r.curso}</td>
+          <td>${r.estado === 'normal' ? '<span class="pill normal">Normal</span>' : '<span class="pill ' + r.pillClass + '">' + r.label + '</span>'}</td>
+          <td>${r.categoria || '—'}</td>
+          <td>${r.email}</td>
+        </tr>
+      `).join('');
+    };
+
+    const renderReport = () => {
+      const state = loadState();
+      const report = getMonthlyReport(state);
+      if (!report.length) {
+        reportTableBody.innerHTML = '<tr><td colspan="7" class="empty">Aún no hay alumnos sobre el umbral mensual.</td></tr>';
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'El informe toma el mes actual del sistema y reúne a los alumnos que superan tres atrasos.';
+        return;
+      }
+
+      reportTableBody.innerHTML = report.map(item => {
+        const notice = state.notifications.find(n => n.studentId === item.studentId);
+        return `
+          <tr>
+            <td>${item.nombre}</td>
+            <td>${item.rutFull}</td>
+            <td>${item.curso}</td>
+            <td>${item.email}</td>
+            <td><span class="pill alert">${item.count}</span></td>
+            <td>A:${item.detalle.A} · B:${item.detalle.B} · C:${item.detalle.C}</td>
+            <td>${notice ? 'Simulada ' + new Date(notice.sentAt).toLocaleString('es-CL') : 'Pendiente'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      reportStatusBox.className = 'status show error';
+      reportStatusBox.innerHTML = `Hay <span class="strong-danger">${report.length}</span> alumno(s) sobre el umbral mensual. Puedes copiar sus correos, exportarlos o simular el envío.`;
+    };
+
+    const refreshAll = () => {
+      renderStats();
+      renderTodayTable();
+      renderReport();
+      monthBadge.textContent = `Periodo ${monthKey()}`;
+    };
+
+    const createKeypad = () => {
+      const keys = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'];
+      keypad.innerHTML = keys.map(key => `
+        <button class="btn key ${isNaN(Number(key)) ? 'special' : ''}" data-key="${key}">${key}</button>
+      `).join('');
+      keypad.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-key]');
+        if (!target) return;
+        const key = target.dataset.key;
+        if (key === '⌫') {
+          rutInput.value = rutInput.value.slice(0, -1);
+          return;
+        }
+        if (key === 'OK') {
+          registerCurrentRut();
+          return;
+        }
+        if (rutInput.value.length >= 8) return;
+        rutInput.value += key;
+      });
+    };
+
+    const renderSamples = () => {
+      sampleList.innerHTML = students.map(student => `
+        <button class="chip" data-rut="${student.rutNumber}">${student.rutNumber} · ${student.nombres}</button>
+      `).join('');
+      sampleList.addEventListener('click', (event) => {
+        const chip = event.target.closest('[data-rut]');
+        if (!chip) return;
+        rutInput.value = chip.dataset.rut;
+      });
+    };
+
+    const registerCurrentRut = () => {
+      clearStatus();
+      const value = sanitizeRutNumber(rutInput.value);
+      rutInput.value = value;
+      if (!value) {
+        renderStatus('Ingresa o escanea un RUT antes de registrar el ingreso.', 'error');
+        return;
+      }
+
+      const student = students.find(s => s.rutNumber === value);
+      if (!student) {
+        renderStatus(`No se encontró un alumno asociado al RUT numérico <strong>${value}</strong> dentro de la base demo.`, 'error');
+        return;
+      }
+
+      const now = new Date();
+      const currentState = loadState();
+      const dateKey = getDateKey(now);
+
+      if (hasDuplicateToday(student.id, dateKey, currentState)) {
+        renderStatus(`El alumno <strong>${student.nombres} ${student.apellidos}</strong> ya fue registrado hoy. El sistema bloqueó el duplicado y no guardó el ingreso.`, 'error');
+        return;
+      }
+
+      const classification = classifyEntry(now);
+      const record = {
+        studentId: student.id,
+        nombre: `${student.nombres} ${student.apellidos}`,
+        rutFull: student.rutFull,
+        rutNumber: student.rutNumber,
+        curso: student.curso,
+        email: student.email,
+        estado: classification.estado,
+        categoria: classification.categoria,
+        label: classification.label,
+        pillClass: classification.pillClass,
+        dateKey,
+        dateLabel: formatDateLong(now),
+        time: formatHourMinute(now),
+        createdAt: now.toISOString()
+      };
+
+      const nextState = {
+        ...currentState,
+        records: [...currentState.records, record]
+      };
+
+      saveState(nextState);
+      const lateCount = monthLateCountForStudent(student.id, nextState);
+      renderStudentCard(record, lateCount);
+      rutInput.value = '';
+      refreshAll();
+
+      if (classification.estado === 'normal') {
+        renderStatus(`Ingreso guardado correctamente para <strong>${record.nombre}</strong> a las <strong>${record.time}</strong>. No corresponde atraso.`, 'success');
+      } else if (lateCount > 3) {
+        renderStatus(`Ingreso guardado como <strong>${classification.label}</strong> para <strong>${record.nombre}</strong>. Acumula <strong>${lateCount}</strong> atrasos en el mes y ya aparece en el informe final.`, 'error');
+      } else {
+        renderStatus(`Ingreso guardado como <strong>${classification.label}</strong> para <strong>${record.nombre}</strong>. Acumula <strong>${lateCount}</strong> atraso(s) en el mes.`, 'success');
+      }
+    };
+
+    const copyEmails = async () => {
+      const emails = getMonthlyReport(loadState()).map(item => item.email).join(', ');
+      if (!emails) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'Todavía no hay correos para copiar porque ningún alumno supera el umbral mensual.';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(emails);
+        reportStatusBox.className = 'status show success';
+        reportStatusBox.innerHTML = 'Lista de correos copiada al portapapeles.';
+      } catch {
+        reportStatusBox.className = 'status show error';
+        reportStatusBox.innerHTML = 'No se pudo copiar automáticamente. Prueba nuevamente o exporta el CSV.';
+      }
+    };
+
+    const exportEmails = () => {
+      const report = getMonthlyReport(loadState());
+      if (!report.length) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'No hay alumnos sobre el umbral mensual para exportar.';
+        return;
+      }
+      const lines = ['nombre,rut,curso,correo,atrasos_mes'];
+      report.forEach(item => lines.push(`"${item.nombre}","${item.rutFull}","${item.curso}","${item.email}",${item.count}`));
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `correos_atrasos_${monthKey()}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = 'Se exportó un CSV con los correos del informe mensual.';
+    };
+
+    const simulateSend = () => {
+      const state = loadState();
+      const report = getMonthlyReport(state);
+      if (!report.length) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'No hay alumnos sobre el umbral mensual, así que no hay notificación que simular.';
+        return;
+      }
+      const now = new Date().toISOString();
+      const notifications = [...state.notifications];
+      report.forEach(item => {
+        const existing = notifications.find(n => n.studentId === item.studentId);
+        if (existing) {
+          existing.sentAt = now;
+        } else {
+          notifications.push({ studentId: item.studentId, sentAt: now });
+        }
+      });
+      saveState({ ...state, notifications });
+      renderReport();
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = `Se simuló el envío de notificación para <strong>${report.length}</strong> alumno(s).`;
+    };
+
+    const resetMonth = () => {
+      if (!confirm('Esto borrará los registros y notificaciones del mes actual en esta demo.')) return;
+      localStorage.removeItem(storageKey());
+      studentCard.classList.remove('show');
+      clearStatus();
+      refreshAll();
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = 'La demo mensual fue reiniciada en este dispositivo.';
+    };
+
+    const updateClock = () => {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = formatTime(now);
+      document.getElementById('liveDate').textContent = formatDateLong(now);
+    };
+
+    const stopScanner = () => {
+      scanLoopActive = false;
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+      }
+      qrVideo.srcObject = null;
+      scanBox.classList.remove('active');
+      scanButton.textContent = '📷 Escanear QR';
+    };
+
+    const processScannedText = (value) => {
+      const digits = sanitizeRutNumber(String(value || ''));
+      if (!digits) return false;
+      rutInput.value = digits;
+      renderStatus(`QR leído correctamente. RUT numérico capturado: <strong>${digits}</strong>.`, 'success');
+      stopScanner();
+      return true;
+    };
+
+    const startScanner = async () => {
+      if (scanLoopActive) {
+        stopScanner();
+        return;
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        renderStatus('Este navegador no permite acceder a la cámara. Usa la digitación manual.', 'error');
+        return;
+      }
+      if (!('BarcodeDetector' in window)) {
+        renderStatus('Tu navegador no soporta lectura QR nativa en esta demo. Usa la digitación manual.', 'error');
+        return;
+      }
+
+      try {
+        const detector = new BarcodeDetector({ formats: ['qr_code'] });
+        activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+        qrVideo.srcObject = activeStream;
+        await qrVideo.play();
+        scanLoopActive = true;
+        scanBox.classList.add('active');
+        scanButton.textContent = '✖ Cerrar cámara';
+        scanNote.textContent = 'Apunta al QR con el número de RUT. La lectura se completa automáticamente.';
+
+        const tick = async () => {
+          if (!scanLoopActive) return;
+          try {
+            const barcodes = await detector.detect(qrVideo);
+            if (barcodes.length) {
+              const rawValue = barcodes[0].rawValue || '';
+              if (processScannedText(rawValue)) return;
+            }
+          } catch {
+            // silent loop
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      } catch (error) {
+        stopScanner();
+        renderStatus('No se pudo iniciar la cámara. Revisa permisos del navegador o usa la digitación manual.', 'error');
+      }
+    };
+
+    registerButton.addEventListener('click', registerCurrentRut);
+    clearButton.addEventListener('click', () => { rutInput.value = ''; clearStatus(); });
+    copyEmailsButton.addEventListener('click', copyEmails);
+    exportEmailsButton.addEventListener('click', exportEmails);
+    simulateSendButton.addEventListener('click', simulateSend);
+    resetMonthButton.addEventListener('click', resetMonth);
+    scanButton.addEventListener('click', startScanner);
+
+    rutInput.addEventListener('input', () => {
+      rutInput.value = sanitizeRutNumber(rutInput.value);
+    });
+
+    window.addEventListener('beforeunload', stopScanner);
+
+    createKeypad();
+    renderSamples();
+    refreshAll();
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
