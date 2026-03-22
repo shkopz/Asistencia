@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Becarb | Control de Atrasos Beta</title>
+  <style>
+    :root {
+      --becarb-blue: #49b6de;
+      --becarb-deep: #1d74b7;
+      --becarb-slate: #5f6570;
+      --bg: #eef6fb;
+      --card: rgba(255,255,255,0.92);
+      --line: rgba(30, 116, 183, 0.12);
+      --success: #0b9f6b;
+      --warning: #d28e08;
+      --danger: #d63649;
+      --text: #1d2430;
+      --muted: #667085;
+      --shadow: 0 18px 40px rgba(14, 34, 60, 0.12);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(73,182,222,0.18), transparent 28%),
+        linear-gradient(180deg, #f8fbfd 0%, var(--bg) 100%);
+    }
+
+    body { min-height: 100vh; }
+
+    .shell {
+      width: min(1180px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 18px 0 36px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero-card, .panel {
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -50px;
+      top: -60px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(73,182,222,0.24), transparent 68%);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand img {
+      width: 180px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(29,116,183,0.08);
+      color: var(--becarb-deep);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4.2vw, 44px);
+      line-height: 1.04;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 56ch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .side-hero {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .clock {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(29,116,183,0.08), rgba(73,182,222,0.12));
+      border: 1px solid rgba(29,116,183,0.12);
+    }
+
+    .clock .label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--becarb-deep);
+      margin-bottom: 8px;
+    }
+
+    .clock .time {
+      font-size: clamp(30px, 5vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 6px;
+    }
+
+    .mini-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .panel-sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .flow span {
+      background: #f4f7fb;
+      border: 1px solid #e4edf6;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .entry-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .entry-box {
+      border: 1px solid #e4edf6;
+      background: #fbfdff;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .entry-box h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .entry-box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field {
+      margin-top: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .rut-display {
+      width: 100%;
+      min-height: 72px;
+      border-radius: 20px;
+      border: 1px solid #d8e4ef;
+      background: #fff;
+      padding: 16px 18px;
+      font-size: clamp(28px, 7vw, 38px);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--becarb-deep);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .helper-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .primary-actions {
+      margin-top: 14px;
+      display: flex;
+    }
+
+    .primary-actions .btn {
+      width: 100%;
+    }
+
+    .helper {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .btn, .chip {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      font: inherit;
+    }
+
+    .btn:hover, .chip:hover { transform: translateY(-1px); }
+    .btn:active, .chip:active { transform: translateY(0); }
+
+    .btn {
+      border-radius: 16px;
+      padding: 13px 16px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--becarb-deep), var(--becarb-blue));
+      color: white;
+      box-shadow: 0 10px 24px rgba(29,116,183,0.22);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--becarb-deep);
+      border: 1px solid #d5e5f3;
+    }
+
+    .btn-ghost {
+      background: #f4f7fb;
+      color: var(--text);
+      border: 1px solid #e4edf6;
+    }
+
+    .btn-danger {
+      background: #fff2f4;
+      color: var(--danger);
+      border: 1px solid rgba(214,54,73,0.15);
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .key {
+      min-height: 68px;
+      border-radius: 18px;
+      border: 1px solid #dce8f3;
+      background: white;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: 0 10px 20px rgba(16, 36, 62, 0.06);
+    }
+
+    .key.special {
+      font-size: 16px;
+      color: var(--becarb-deep);
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .qr-wrap .btn {
+      flex: 1 1 0;
+    }
+
+    
+    .scan-box {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      background: rgba(8, 17, 30, 0.96);
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
+    }
+
+    .scan-box.active { display: flex; }
+
+    .scan-panel {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      background: #08111e;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scan-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: max(16px, env(safe-area-inset-top)) 18px 12px;
+      background: rgba(8, 17, 30, 0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: white;
+    }
+
+    .scan-title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.05;
+      color: white;
+    }
+
+    .scan-help {
+      margin: 8px 0 0;
+      color: rgba(255,255,255,0.78);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .scan-close {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      min-width: 88px;
+      backdrop-filter: blur(8px);
+    }
+
+    .scan-viewport {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #qrVideo {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+      min-height: 0;
+      max-height: none;
+      object-fit: cover;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .scan-frame {
+      width: min(74vw, 360px);
+      height: min(74vw, 360px);
+      border: 3px solid rgba(255,255,255,0.86);
+      border-radius: 28px;
+      box-shadow: 0 0 0 999px rgba(0,0,0,0.26);
+    }
+
+    .scan-note {
+      padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+      background: rgba(8, 17, 30, 0.94);
+      color: rgba(255,255,255,0.92);
+      font-size: 13px;
+      line-height: 1.5;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 640px) {
+      .scan-top { padding: max(14px, env(safe-area-inset-top)) 14px 10px; }
+      .scan-title { font-size: 22px; }
+      .scan-close { min-width: 74px; padding: 10px 12px; }
+      .scan-frame {
+        width: min(78vw, 320px);
+        height: min(78vw, 320px);
+      }
+    }
+
+
+    .status {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      border: 1px solid transparent;
+    }
+
+    .status.show { display: block; }
+    .status.success { background: #ecfbf6; border-color: rgba(11,159,107,0.18); }
+    .status.error { background: #fff3f5; border-color: rgba(214,54,73,0.18); }
+    .status.info { background: #eef7fd; border-color: rgba(29,116,183,0.14); }
+
+    .student-card {
+      margin-top: 16px;
+      display: none;
+      border: 1px solid #dbe8f4;
+      border-radius: 20px;
+      background: white;
+      padding: 16px;
+      box-shadow: 0 10px 22px rgba(16, 36, 62, 0.06);
+    }
+
+    .student-card.show { display: block; }
+
+    .student-head {
+      display: flex;
+      gap: 14px;
+      align-items: start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .student-name {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .student-meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .pill.normal { background: #edf9f4; color: var(--success); }
+    .pill.a { background: #fff7df; color: var(--warning); }
+    .pill.b { background: #fff0df; color: #b76a00; }
+    .pill.c { background: #fff1f3; color: var(--danger); }
+    
+    .pill.alert { background: rgba(214,54,73,0.12); color: var(--danger); }
+
+    .student-card.warning-state {
+      border-color: rgba(210,142,8,0.20);
+      background: linear-gradient(180deg, #fffdfa 0%, #ffffff 100%);
+    }
+
+    .student-card.alert-state {
+      border-color: rgba(214,54,73,0.20);
+      background: linear-gradient(180deg, #fff8fa 0%, #ffffff 100%);
+    }
+
+    .mini-card.warning-tone {
+      background: #fff8ef;
+      border-color: rgba(210,142,8,0.18);
+    }
+
+    .mini-card.alert-tone {
+      background: #fff4f6;
+      border-color: rgba(214,54,73,0.18);
+    }
+
+    .mini-card.warning-tone .mini-value {
+      color: #a86400;
+    }
+
+    .mini-card.alert-tone .mini-value {
+      color: var(--danger);
+    }
+
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-card {
+      background: #f8fbfd;
+      border: 1px solid #e5eef6;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .mini-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .mini-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid #e3edf6;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat .k {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .stat .v {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .rule-box {
+      border: 1px dashed rgba(29,116,183,0.24);
+      background: linear-gradient(135deg, rgba(29,116,183,0.04), rgba(73,182,222,0.06));
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .rule-box ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .sample-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: white;
+      border-radius: 999px;
+      border: 1px solid #d8e6f2;
+      padding: 10px 12px;
+      color: var(--becarb-deep);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid #e3edf6;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eef3f8;
+      font-size: 14px;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #fbfdff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .report-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .badge-inline {
+      display: inline-flex;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #eef7fd;
+      color: var(--becarb-deep);
+    }
+
+    .empty {
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .strong-danger { color: var(--danger); font-weight: 800; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(7, 15, 28, 0.58);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal-card {
+      width: min(520px, 100%);
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(29,116,183,0.12);
+      border-radius: 28px;
+      box-shadow: 0 28px 60px rgba(12, 28, 48, 0.24);
+      overflow: hidden;
+      transform: translateY(10px) scale(0.98);
+      opacity: 0;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .modal-backdrop.show .modal-card {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .modal-head {
+      padding: 18px 22px 10px;
+      border-bottom: 1px solid #edf3f8;
+      background: linear-gradient(135deg, rgba(29,116,183,0.06), rgba(73,182,222,0.10));
+    }
+
+    .modal-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    
+    .modal-kicker.success { background: rgba(11,159,107,0.12); color: var(--success); }
+    .modal-kicker.warning { background: rgba(210,142,8,0.16); color: #a86400; }
+    .modal-kicker.alert,
+    .modal-kicker.error { background: rgba(214,54,73,0.12); color: var(--danger); }
+    .modal-kicker.info { background: rgba(29,116,183,0.10); color: var(--becarb-deep); }
+
+    .modal-card.warning .modal-head {
+      background: linear-gradient(135deg, rgba(210,142,8,0.12), rgba(255,183,77,0.16));
+      border-bottom-color: rgba(210,142,8,0.12);
+    }
+
+    .modal-card.alert .modal-head {
+      background: linear-gradient(135deg, rgba(214,54,73,0.10), rgba(255,129,146,0.14));
+      border-bottom-color: rgba(214,54,73,0.14);
+    }
+
+    .modal-card.warning .modal-data .mini-card {
+      background: #fff8ef;
+      border-color: rgba(210,142,8,0.18);
+    }
+
+    .modal-card.alert .modal-data .mini-card {
+      background: #fff4f6;
+      border-color: rgba(214,54,73,0.18);
+    }
+
+
+    .modal-title {
+      margin: 0;
+      font-size: clamp(24px, 5vw, 32px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .modal-body {
+      padding: 18px 22px;
+    }
+
+    .modal-copy {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      margin: 0 0 14px;
+    }
+
+    .modal-data {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .modal-data .mini-card {
+      background: #f7fbff;
+    }
+
+    .modal-footer {
+      padding: 0 22px 22px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .modal-footer .btn { min-width: 210px; }
+
+
+    @media (max-width: 980px) {
+      .hero, .grid {
+        grid-template-columns: 1fr;
+      }
+      .student-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100vw - 16px, 1180px); }
+      .hero-card, .panel { border-radius: 22px; }
+      .hero-card, .panel, .side-hero { padding: 16px; }
+      .student-grid, .stats-grid { grid-template-columns: 1fr 1fr; }
+      .helper-row { align-items: stretch; }
+      .btn { width: 100%; }
+      .qr-wrap .btn { width: 100%; }
+      .key { min-height: 60px; }
+      .brand img { width: 150px; }
+      .panel-title { font-size: 18px; }
+    }
+
+    @media (max-width: 460px) {
+      .student-grid, .modal-data { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .qr-wrap .btn { width: 100%; }
+      .mini-card { padding: 10px; }
+      .modal-footer .btn { width: 100%; min-width: 0; }
+    }
+  
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+
+    .login-wrap {
+      width: min(560px, 100%);
+    }
+
+    .login-card {
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -60px;
+      top: -80px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(73,182,222,0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-brand img {
+      width: 200px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .login-card h1 {
+      margin: 0;
+      font-size: clamp(30px, 6vw, 44px);
+      line-height: 1.02;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-card p {
+      color: var(--muted);
+      margin: 10px 0 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-fields {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .login-field label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--becarb-slate);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .login-field input {
+      width: 100%;
+      border: 1px solid rgba(29,116,183,0.16);
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      background: rgba(255,255,255,0.96);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .login-field input:focus {
+      border-color: rgba(29,116,183,0.32);
+      box-shadow: 0 0 0 4px rgba(73,182,222,0.12);
+    }
+
+    .login-actions {
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-button {
+      width: 100%;
+      min-height: 60px;
+      border: 0;
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 900;
+      color: white;
+      background: linear-gradient(90deg, var(--becarb-deep), var(--becarb-blue));
+      box-shadow: 0 12px 24px rgba(29,116,183,0.22);
+    }
+
+    .login-error {
+      display: none;
+      margin-top: 14px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: rgba(214,54,73,0.10);
+      color: var(--danger);
+      border: 1px solid rgba(214,54,73,0.12);
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    .login-hint {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(29,116,183,0.07);
+      color: var(--becarb-deep);
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-shell[hidden] {
+      display: none !important;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="login-screen" id="loginScreen">
+    <div class="login-wrap">
+      <section class="login-card">
+        <div class="login-brand">
+          <img src="https://becarb.cl/wp-content/uploads/2019/10/logoweb_becarb_trans.png" alt="Logo Becarb" />
+        </div>
+        <span class="tag">Acceso al sistema · Beta demo</span>
+        <h1>Control de atrasos</h1>
+        <p>Ingresa tus credenciales para acceder al módulo de portería y al informe mensual del beta.</p>
+
+        <form class="login-fields" id="loginForm" autocomplete="on">
+          <div class="login-field">
+            <label for="loginUser">Usuario</label>
+            <input id="loginUser" name="username" type="text" autocomplete="username" placeholder="Usuario" />
+          </div>
+
+          <div class="login-field">
+            <label for="loginPassword">Clave</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Clave de acceso" />
+          </div>
+
+          <div class="login-actions">
+            <button class="login-button" id="loginButton" type="submit">Ingresar al sistema</button>
+          </div>
+        </form>
+
+        <div class="login-error" id="loginError">Usuario o clave incorrectos.</div>
+
+        <div class="login-hint">
+          <strong>Acceso de prueba:</strong><br>
+          Usuario: <strong>becarito</strong><br>
+          Clave: <strong>1234</strong>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="shell app-shell" id="appShell" hidden>
+
+    <section class="hero">
+      <article class="hero-card">
+        <div>
+          <div class="brand">
+            <img src="https://becarb.cl/wp-content/uploads/2019/10/logoweb_becarb_trans.png" alt="Logo Becarb" />
+          </div>
+          <span class="tag">Beta demo · Control de atrasos</span>
+          <h1>Ingreso rápido por RUT o QR, con hora automática del sistema.</h1>
+          <p>
+            Esta versión de demostración simula el flujo de portería: lectura de RUT sin dígito verificador,
+            cruce con la base de estudiantes, bloqueo de duplicados en el día, conteo mensual de atrasos y
+            preparación del informe final con notificación simulada al correo del alumno.
+          </p>
+        </div>
+      </article>
+
+      <aside class="hero-card side-hero">
+        <div class="clock">
+          <div class="label">Hora oficial del sistema</div>
+          <div class="time" id="liveClock">--:--:--</div>
+          <div class="mini-note" id="liveDate">Cargando fecha…</div>
+        </div>
+        <div class="mini-note">
+          <strong>Reglas activas del beta:</strong><br>
+          Categoría A de 08:10 a 08:20 · Categoría B de 08:21 a 08:30 · Categoría C desde 08:31.<br>
+          El conteo se acumula por mes calendario.
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Portería</h2>
+            <p class="panel-sub">Ingresa el RUT numérico o escanea el QR. La hora se toma automáticamente del equipo.</p>
+          </div>
+          <span class="badge-inline" id="monthBadge">Periodo actual</span>
+        </div>
+
+        <div class="flow">
+          <span>1. Leer RUT</span>
+          <span>2. Buscar alumno</span>
+          <span>3. Guardar ingreso</span>
+          <span>4. Contar atrasos</span>
+          <span>5. Alertar sobre 3</span>
+        </div>
+
+        <div class="entry-wrap">
+          <div class="entry-box">
+            <h3>Ingreso manual</h3>
+            <p>Se digita solo la parte numérica del RUT. Sin puntos, sin guion, sin dígito verificador.</p>
+
+            <div class="field">
+              <label for="rutInput">RUT numérico</label>
+              <input
+                id="rutInput"
+                class="rut-display"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="8"
+                autocomplete="off"
+                placeholder="21345678"
+                readonly
+              />
+            </div>
+
+            <div class="helper-row">
+              <div class="helper">El teclado visual deja botones grandes para uso rápido en portería.</div>
+            </div>
+
+            <div class="keypad" id="keypad"></div>
+
+            <div class="primary-actions">
+              <button class="btn btn-primary" id="registerButton">Registrar ingreso</button>
+            </div>
+
+            <div class="qr-wrap">
+              <button class="btn btn-primary" id="scanButton">📷 Escanear QR</button>
+              <button class="btn btn-ghost" id="clearButton">Limpiar</button>
+            </div>
+
+            <div class="scan-box" id="scanBox" aria-hidden="true">
+              <div class="scan-panel" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+                <div class="scan-top">
+                  <div>
+                    <h3 class="scan-title" id="scanTitle">Escanear QR</h3>
+                    <p class="scan-help">Usa la cámara para leer el QR que contiene solo el número de RUT.</p>
+                  </div>
+                  <button class="scan-close" id="scanCloseButton" type="button">Cerrar</button>
+                </div>
+                <div class="scan-viewport">
+                  <video id="qrVideo" playsinline muted></video>
+                  <canvas id="qrCanvas" hidden></canvas>
+                  <div class="scan-overlay"><div class="scan-frame"></div></div>
+                </div>
+                <div class="scan-note" id="scanNote">
+                  Apunta la cámara al QR que contiene solo el número de RUT. Si el navegador no soporta lectura QR,
+                  usa la digitación manual.
+                </div>
+              </div>
+            </div>
+
+            <div class="status" id="statusBox"></div>
+
+            <div class="student-card" id="studentCard">
+              <div class="student-head">
+                <div>
+                  <h3 class="student-name" id="studentName">—</h3>
+                  <div class="student-meta" id="studentMeta">—</div>
+                </div>
+                <div id="categoryPill" class="pill normal">Ingreso normal</div>
+              </div>
+              <div class="student-grid">
+                <div class="mini-card">
+                  <div class="mini-label">Correo</div>
+                  <div class="mini-value" id="studentEmail">—</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Hora registrada</div>
+                  <div class="mini-value" id="studentTime">—</div>
+                </div>
+                <div class="mini-card" id="studentLateCard">
+                  <div class="mini-label">Atrasos del mes</div>
+                  <div class="mini-value" id="studentLateCount">0</div>
+                </div>
+                <div class="mini-card" id="studentStatusCard">
+                  <div class="mini-label">Estado</div>
+                  <div class="mini-value" id="studentStatus">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Resumen operativo</h2>
+            <p class="panel-sub">Lo que vería inspectoría en un cierre rápido de jornada.</p>
+          </div>
+        </div>
+
+        <div class="rule-box">
+          <strong>Lógica del beta</strong>
+          <ul>
+            <li>La hora se obtiene automáticamente del sistema.</li>
+            <li>El cruce se hace con la base demo de estudiantes.</li>
+            <li>Si el alumno ya fue registrado hoy, se bloquea el duplicado.</li>
+            <li>La alerta aparece cuando supera 3 atrasos en el mes.</li>
+            <li>El envío de correo está simulado en esta etapa.</li>
+          </ul>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="entry-box">
+          <h3>RUT demo para pruebas</h3>
+          <p>Tócalos para autocompletar el ingreso. Todos están guardados con RUT completo en la base interna.</p>
+          <div class="sample-list" id="sampleList"></div>
+        </div>
+
+        <div class="footer-note">
+          Esta demo guarda los movimientos del mes en el navegador del dispositivo usando almacenamiento local. Es ideal para revisar el flujo, no para operación real.
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-bottom:18px;">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Registros recientes del día</h2>
+          <p class="panel-sub">Se muestran los ingresos tomados hoy, normales y con atraso.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>RUT</th>
+              <th>Alumno</th>
+              <th>Curso</th>
+              <th>Estado</th>
+              <th>Categoría</th>
+              <th>Correo</th>
+            </tr>
+          </thead>
+          <tbody id="todayTableBody">
+            <tr><td colspan="7" class="empty">Todavía no hay registros hoy.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Informe mensual · alumnos con más de 3 atrasos</h2>
+          <p class="panel-sub">Desde aquí se exportan los correos y se simula la notificación final.</p>
+        </div>
+      </div>
+
+      <div class="report-actions">
+        <button class="btn btn-secondary" id="copyEmailsButton">Copiar correos</button>
+        <button class="btn btn-secondary" id="exportEmailsButton">Exportar CSV</button>
+        <button class="btn btn-primary" id="simulateSendButton">Enviar notificación simulada</button>
+        <button class="btn btn-danger" id="resetMonthButton">Reiniciar demo mensual</button>
+      </div>
+
+      <div class="status info show" id="reportStatusBox">
+        El informe toma el mes actual del sistema y reúne a los alumnos que superan tres atrasos.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>RUT completo</th>
+              <th>Curso</th>
+              <th>Correo</th>
+              <th>Atrasos mes</th>
+              <th>Detalle</th>
+              <th>Notificación</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr><td colspan="7" class="empty">Aún no hay alumnos sobre el umbral mensual.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+
+  <div class="modal-backdrop" id="feedbackModal" aria-hidden="true">
+    <div class="modal-card" id="modalCard" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div class="modal-kicker info" id="modalKicker">Aviso</div>
+        <h2 class="modal-title" id="modalTitle">Estado del ingreso</h2>
+      </div>
+      <div class="modal-body">
+        <p class="modal-copy" id="modalMessage">Mensaje</p>
+        <div class="modal-data" id="modalData" hidden>
+          <div class="mini-card">
+            <div class="mini-label">Alumno</div>
+            <div class="mini-value" id="modalStudent">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Curso</div>
+            <div class="mini-value" id="modalCourse">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Hora registrada</div>
+            <div class="mini-value" id="modalTime">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="modalActionButton">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+    const students = [
+      { id: 1, rutFull: '21.345.678-9', rutNumber: '21345678', nombres: 'Martina', apellidos: 'González Rojas', curso: '7° Básico A', email: 'martina.gonzalez@becarb.demo' },
+      { id: 2, rutFull: '20.112.334-5', rutNumber: '20112334', nombres: 'Tomás', apellidos: 'Herrera Silva', curso: '1° Medio B', email: 'tomas.herrera@becarb.demo' },
+      { id: 3, rutFull: '19.876.543-2', rutNumber: '19876543', nombres: 'Florencia', apellidos: 'Pizarro Vega', curso: '8° Básico C', email: 'florencia.pizarro@becarb.demo' },
+      { id: 4, rutFull: '22.456.111-7', rutNumber: '22456111', nombres: 'Benjamín', apellidos: 'Soto Pérez', curso: '6° Básico A', email: 'benjamin.soto@becarb.demo' },
+      { id: 5, rutFull: '24.555.122-8', rutNumber: '24555122', nombres: 'Catalina', apellidos: 'Araya Morales', curso: '2° Medio A', email: 'catalina.araya@becarb.demo' },
+      { id: 6, rutFull: '23.102.884-3', rutNumber: '23102884', nombres: 'Vicente', apellidos: 'Navarro Díaz', curso: '5° Básico B', email: 'vicente.navarro@becarb.demo' }
+    ];
+
+    const LOGIN_USER = 'becarito';
+    const LOGIN_PASSWORD = '1234';
+    const LOGIN_STORAGE_KEY = 'becarb-atrasos-demo:auth';
+
+    const loginScreen = document.getElementById('loginScreen');
+    const appShell = document.getElementById('appShell');
+    const loginForm = document.getElementById('loginForm');
+    const loginUser = document.getElementById('loginUser');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+
+    const rutInput = document.getElementById('rutInput');
+    const keypad = document.getElementById('keypad');
+    const statusBox = document.getElementById('statusBox');
+    const studentCard = document.getElementById('studentCard');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const modalCard = document.getElementById('modalCard');
+    const modalKicker = document.getElementById('modalKicker');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalData = document.getElementById('modalData');
+    const modalStudent = document.getElementById('modalStudent');
+    const modalCourse = document.getElementById('modalCourse');
+    const modalTime = document.getElementById('modalTime');
+    const modalActionButton = document.getElementById('modalActionButton');
+    const studentLateCard = document.getElementById('studentLateCard');
+    const studentStatusCard = document.getElementById('studentStatusCard');
+    const registerButton = document.getElementById('registerButton');
+    const clearButton = document.getElementById('clearButton');
+    const sampleList = document.getElementById('sampleList');
+    const statsGrid = document.getElementById('statsGrid');
+    const todayTableBody = document.getElementById('todayTableBody');
+    const reportTableBody = document.getElementById('reportTableBody');
+    const reportStatusBox = document.getElementById('reportStatusBox');
+    const copyEmailsButton = document.getElementById('copyEmailsButton');
+    const exportEmailsButton = document.getElementById('exportEmailsButton');
+    const simulateSendButton = document.getElementById('simulateSendButton');
+    const resetMonthButton = document.getElementById('resetMonthButton');
+    const monthBadge = document.getElementById('monthBadge');
+    const scanButton = document.getElementById('scanButton');
+    const scanBox = document.getElementById('scanBox');
+    const scanCloseButton = document.getElementById('scanCloseButton');
+    const scanNote = document.getElementById('scanNote');
+    const qrVideo = document.getElementById('qrVideo');
+    const qrCanvas = document.getElementById('qrCanvas');
+
+    const STORAGE_PREFIX = 'becarb-atrasos-demo';
+    let activeStream = null;
+    let scanLoopActive = false;
+
+    const monthKey = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    };
+
+    const storageKey = () => `${STORAGE_PREFIX}:${monthKey()}`;
+
+    const loadState = () => {
+      const raw = localStorage.getItem(storageKey());
+      if (!raw) return { records: [], notifications: [] };
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          records: Array.isArray(parsed.records) ? parsed.records : [],
+          notifications: Array.isArray(parsed.notifications) ? parsed.notifications : []
+        };
+      } catch {
+        return { records: [], notifications: [] };
+      }
+    };
+
+    const saveState = (state) => localStorage.setItem(storageKey(), JSON.stringify(state));
+
+    const formatDateLong = (date) => date.toLocaleDateString('es-CL', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const formatTime = (date) => date.toLocaleTimeString('es-CL', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+
+    const formatHourMinute = (date) => date.toLocaleTimeString('es-CL', {
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    const getDateKey = (date) => date.toISOString().slice(0, 10);
+
+    const sanitizeRutNumber = (value) => (value || '').replace(/\D/g, '').slice(0, 8);
+
+    const classifyEntry = (date) => {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const total = hours * 60 + minutes;
+      if (total < 490) {
+        return { estado: 'normal', categoria: null, label: 'Ingreso normal', pillClass: 'normal' };
+      }
+      if (total >= 490 && total <= 500) {
+        return { estado: 'atraso', categoria: 'A', label: 'Atraso tipo A', pillClass: 'a' };
+      }
+      if (total >= 501 && total <= 510) {
+        return { estado: 'atraso', categoria: 'B', label: 'Atraso tipo B', pillClass: 'b' };
+      }
+      return { estado: 'atraso', categoria: 'C', label: 'Atraso tipo C', pillClass: 'c' };
+    };
+
+    const monthLateCountForStudent = (studentId, state) =>
+      state.records.filter(r => r.studentId === studentId && r.estado === 'atraso').length;
+
+    const hasDuplicateToday = (studentId, dateKey, state) =>
+      state.records.some(r => r.studentId === studentId && r.dateKey === dateKey);
+
+    const getTodayRecords = (state) => {
+      const todayKey = getDateKey(new Date());
+      return state.records.filter(r => r.dateKey === todayKey)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    };
+
+    const getMonthlyReport = (state) => {
+      const map = new Map();
+      state.records
+        .filter(r => r.estado === 'atraso')
+        .forEach(record => {
+          if (!map.has(record.studentId)) {
+            map.set(record.studentId, {
+              studentId: record.studentId,
+              nombre: record.nombre,
+              rutFull: record.rutFull,
+              curso: record.curso,
+              email: record.email,
+              count: 0,
+              detalle: { A: 0, B: 0, C: 0 }
+            });
+          }
+          const entry = map.get(record.studentId);
+          entry.count += 1;
+          if (record.categoria) entry.detalle[record.categoria] += 1;
+        });
+      return Array.from(map.values()).filter(x => x.count > 3).sort((a, b) => b.count - a.count || a.nombre.localeCompare(b.nombre));
+    };
+
+    const renderStatus = (message, type = 'info') => {
+      statusBox.className = `status show ${type}`;
+      statusBox.innerHTML = message;
+    };
+
+    const clearStatus = () => {
+      statusBox.className = 'status';
+      statusBox.textContent = '';
+    };
+
+    let modalCloseHandler = null;
+    let audioContext = null;
+
+    const ensureAudioContext = () => {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (!audioContext) audioContext = new AudioCtx();
+      if (audioContext.state === 'suspended') audioContext.resume();
+      return audioContext;
+    };
+
+    
+    const playTone = (type = 'success') => {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+      const notes = type === 'alert' || type === 'error'
+        ? [{ freq: 330, time: 0, dur: 0.11 }, { freq: 247, time: 0.14, dur: 0.16 }]
+        : type === 'warning'
+          ? [{ freq: 622, time: 0, dur: 0.08 }, { freq: 784, time: 0.1, dur: 0.12 }]
+          : [{ freq: 740, time: 0, dur: 0.08 }, { freq: 988, time: 0.1, dur: 0.18 }];
+      const start = ctx.currentTime + 0.01;
+      notes.forEach(note => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type === 'alert' || type === 'error' ? 'triangle' : 'sine';
+        osc.frequency.value = note.freq;
+        gain.gain.setValueAtTime(0.0001, start + note.time);
+        gain.gain.exponentialRampToValueAtTime(type === 'alert' || type === 'error' ? 0.075 : type === 'warning' ? 0.075 : 0.09, start + note.time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + note.time + note.dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start + note.time);
+        osc.stop(start + note.time + note.dur + 0.02);
+      });
+    };
+
+    const vibrateFeedback = (type = 'success') => {
+      if (!('vibrate' in navigator)) return;
+      try {
+        if (type === 'alert' || type === 'error') {
+          navigator.vibrate([160, 90, 220]);
+        } else if (type === 'warning') {
+          navigator.vibrate([50, 30, 60]);
+        } else {
+          navigator.vibrate(35);
+        }
+      } catch {
+        // no-op if browser blocks or ignores vibration
+      }
+    };
+
+    const getLateVisualState = (count, estado) => {
+      if (estado !== 'atraso') return 'success';
+      if (count >= 3) return 'alert';
+      if (count === 2) return 'warning';
+      return 'success';
+    };
+
+    const resetEntryUI = () => {
+      rutInput.value = '';
+      studentCard.classList.remove('show');
+      clearStatus();
+    };
+
+    const hideModal = () => {
+      feedbackModal.classList.remove('show');
+      modalCard.className = 'modal-card';
+      feedbackModal.setAttribute('aria-hidden', 'true');
+      const handler = modalCloseHandler;
+      modalCloseHandler = null;
+      if (typeof handler === 'function') handler();
+    };
+
+    
+    const showModal = ({ title, message, buttonText = 'OK', type = 'info', details = null, onClose = null }) => {
+      modalCard.className = `modal-card ${type}`.trim();
+      modalKicker.className = `modal-kicker ${type}`;
+      modalKicker.textContent =
+        type === 'success' ? 'Registro aceptado' :
+        type === 'warning' ? 'Atención' :
+        type === 'alert' ? 'Llamar apoderado' :
+        type === 'error' ? 'Revisión requerida' : 'Aviso';
+
+      modalTitle.textContent = title;
+      modalMessage.innerHTML = message || '';
+      modalMessage.hidden = !message;
+      modalActionButton.textContent = buttonText;
+
+      const shouldShowDetails = !!(details && details.student && details.course && details.time);
+      modalData.hidden = !shouldShowDetails;
+
+      if (shouldShowDetails) {
+        modalStudent.textContent = details.student;
+        modalCourse.textContent = details.course;
+        modalTime.textContent = details.time;
+      } else {
+        modalStudent.textContent = '—';
+        modalCourse.textContent = '—';
+        modalTime.textContent = '—';
+      }
+
+      modalCloseHandler = onClose;
+      feedbackModal.classList.add('show');
+      feedbackModal.setAttribute('aria-hidden', 'false');
+      modalActionButton.focus();
+      playTone(type);
+      vibrateFeedback(type);
+    };
+
+    
+    const renderStudentCard = (record, count) => {
+      const pill = document.getElementById('categoryPill');
+      const name = document.getElementById('studentName');
+      const meta = document.getElementById('studentMeta');
+      const email = document.getElementById('studentEmail');
+      const time = document.getElementById('studentTime');
+      const lateCount = document.getElementById('studentLateCount');
+      const status = document.getElementById('studentStatus');
+      const visualState = getLateVisualState(count, record.estado);
+
+      name.textContent = record.nombre;
+      meta.textContent = `${record.curso} · RUT completo ${record.rutFull}`;
+      email.textContent = record.email;
+      time.textContent = record.time;
+      lateCount.textContent = String(count);
+      status.textContent = record.label;
+      pill.className = `pill ${record.pillClass}`;
+      pill.textContent = record.label;
+
+      studentCard.classList.remove('warning-state', 'alert-state');
+      studentLateCard.classList.remove('warning-tone', 'alert-tone');
+      studentStatusCard.classList.remove('warning-tone', 'alert-tone');
+
+      if (visualState === 'warning') {
+        studentCard.classList.add('warning-state');
+        studentLateCard.classList.add('warning-tone');
+        studentStatusCard.classList.add('warning-tone');
+      } else if (visualState === 'alert') {
+        studentCard.classList.add('alert-state');
+        studentLateCard.classList.add('alert-tone');
+        studentStatusCard.classList.add('alert-tone');
+      }
+
+      studentCard.classList.add('show');
+    };
+
+    const renderStats = () => {
+      const state = loadState();
+      const today = getTodayRecords(state);
+      const monthlyLates = state.records.filter(r => r.estado === 'atraso');
+      const a = monthlyLates.filter(r => r.categoria === 'A').length;
+      const b = monthlyLates.filter(r => r.categoria === 'B').length;
+      const c = monthlyLates.filter(r => r.categoria === 'C').length;
+      const alertCount = getMonthlyReport(state).length;
+      const stats = [
+        ['Ingresos hoy', today.length],
+        ['Atrasos del mes', monthlyLates.length],
+        ['Categoría A', a],
+        ['Categoría B', b],
+        ['Categoría C', c],
+        ['Alumnos sobre 3', alertCount]
+      ];
+      statsGrid.innerHTML = stats.map(([k, v]) => `
+        <div class="stat">
+          <div class="k">${k}</div>
+          <div class="v">${v}</div>
+        </div>
+      `).join('');
+    };
+
+    const renderTodayTable = () => {
+      const state = loadState();
+      const rows = getTodayRecords(state);
+      if (!rows.length) {
+        todayTableBody.innerHTML = '<tr><td colspan="7" class="empty">Todavía no hay registros hoy.</td></tr>';
+        return;
+      }
+      todayTableBody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.time}</td>
+          <td>${r.rutFull}</td>
+          <td>${r.nombre}</td>
+          <td>${r.curso}</td>
+          <td>${r.estado === 'normal' ? '<span class="pill normal">Normal</span>' : '<span class="pill ' + r.pillClass + '">' + r.label + '</span>'}</td>
+          <td>${r.categoria || '—'}</td>
+          <td>${r.email}</td>
+        </tr>
+      `).join('');
+    };
+
+    const renderReport = () => {
+      const state = loadState();
+      const report = getMonthlyReport(state);
+      if (!report.length) {
+        reportTableBody.innerHTML = '<tr><td colspan="7" class="empty">Aún no hay alumnos sobre el umbral mensual.</td></tr>';
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'El informe toma el mes actual del sistema y reúne a los alumnos que superan tres atrasos.';
+        return;
+      }
+
+      reportTableBody.innerHTML = report.map(item => {
+        const notice = state.notifications.find(n => n.studentId === item.studentId);
+        return `
+          <tr>
+            <td>${item.nombre}</td>
+            <td>${item.rutFull}</td>
+            <td>${item.curso}</td>
+            <td>${item.email}</td>
+            <td><span class="pill alert">${item.count}</span></td>
+            <td>A:${item.detalle.A} · B:${item.detalle.B} · C:${item.detalle.C}</td>
+            <td>${notice ? 'Simulada ' + new Date(notice.sentAt).toLocaleString('es-CL') : 'Pendiente'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      reportStatusBox.className = 'status show error';
+      reportStatusBox.innerHTML = `Hay <span class="strong-danger">${report.length}</span> alumno(s) sobre el umbral mensual. Puedes copiar sus correos, exportarlos o simular el envío.`;
+    };
+
+    const refreshAll = () => {
+      renderStats();
+      renderTodayTable();
+      renderReport();
+      monthBadge.textContent = `Periodo ${monthKey()}`;
+    };
+
+    const createKeypad = () => {
+      const keys = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'];
+      keypad.innerHTML = keys.map(key => `
+        <button class="btn key ${isNaN(Number(key)) ? 'special' : ''}" data-key="${key}">${key}</button>
+      `).join('');
+      keypad.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-key]');
+        if (!target) return;
+        const key = target.dataset.key;
+        if (key === '⌫') {
+          rutInput.value = rutInput.value.slice(0, -1);
+          return;
+        }
+        if (key === 'OK') {
+          registerCurrentRut();
+          return;
+        }
+        if (rutInput.value.length >= 8) return;
+        rutInput.value += key;
+      });
+    };
+
+    const renderSamples = () => {
+      sampleList.innerHTML = students.map(student => `
+        <button class="chip" data-rut="${student.rutNumber}">${student.rutNumber} · ${student.nombres}</button>
+      `).join('');
+      sampleList.addEventListener('click', (event) => {
+        const chip = event.target.closest('[data-rut]');
+        if (!chip) return;
+        rutInput.value = chip.dataset.rut;
+      });
+    };
+
+    const registerCurrentRut = () => {
+      clearStatus();
+      const value = sanitizeRutNumber(rutInput.value);
+      rutInput.value = value;
+      if (!value) {
+        showModal({
+          title: 'INGRESA UN RUT',
+          message: 'Debes ingresar o escanear un RUT antes de registrar el ingreso.',
+          buttonText: 'INGRESAR NUEVAMENTE',
+          type: 'error',
+          onClose: resetEntryUI
+        });
+        return;
+      }
+
+      const student = students.find(s => s.rutNumber === value);
+      if (!student) {
+        showModal({
+          title: 'RUT NO ENCONTRADO',
+          message: '',
+          buttonText: 'INGRESAR NUEVAMENTE',
+          type: 'error',
+          onClose: resetEntryUI
+        });
+        return;
+      }
+
+      const now = new Date();
+      const currentState = loadState();
+      const dateKey = getDateKey(now);
+
+      if (hasDuplicateToday(student.id, dateKey, currentState)) {
+        showModal({
+          title: 'ALUMNO YA REGISTRADO',
+          message: `<strong>${student.nombres} ${student.apellidos}</strong> ya fue ingresado hoy. El sistema bloqueó el duplicado y no guardó un nuevo registro.`,
+          buttonText: 'INGRESAR NUEVAMENTE',
+          type: 'error',
+          onClose: resetEntryUI
+        });
+        return;
+      }
+
+      const classification = classifyEntry(now);
+      const record = {
+        studentId: student.id,
+        nombre: `${student.nombres} ${student.apellidos}`,
+        rutFull: student.rutFull,
+        rutNumber: student.rutNumber,
+        curso: student.curso,
+        email: student.email,
+        estado: classification.estado,
+        categoria: classification.categoria,
+        label: classification.label,
+        pillClass: classification.pillClass,
+        dateKey,
+        dateLabel: formatDateLong(now),
+        time: formatHourMinute(now),
+        createdAt: now.toISOString()
+      };
+
+      const nextState = {
+        ...currentState,
+        records: [...currentState.records, record]
+      };
+
+      saveState(nextState);
+      const lateCount = monthLateCountForStudent(student.id, nextState);
+      renderStudentCard(record, lateCount);
+      refreshAll();
+
+      let message = 'El ingreso fue almacenado correctamente y el sistema quedó listo para registrar al siguiente estudiante.';
+      const modalType = getLateVisualState(lateCount, classification.estado);
+
+      if (classification.estado === 'atraso' && lateCount >= 3) {
+        message = `El ingreso quedó registrado como <strong>${classification.label}</strong>. El alumno acumula <strong>${lateCount}</strong> atrasos en el mes. <strong>Corresponde contactar al apoderado</strong> y revisar el informe final.`;
+      } else if (classification.estado === 'atraso' && lateCount === 2) {
+        message = `El ingreso quedó registrado como <strong>${classification.label}</strong>. El alumno acumula <strong>${lateCount}</strong> atrasos en el mes y ya entra en una zona de atención.`;
+      } else if (classification.estado === 'atraso') {
+        message = `El ingreso quedó registrado como <strong>${classification.label}</strong>. El alumno acumula <strong>${lateCount}</strong> atraso(s) en el mes.`;
+      }
+
+      showModal({
+        title: 'INGRESO REGISTRADO',
+        message,
+        buttonText: 'OK',
+        type: modalType,
+        details: {
+          student: record.nombre,
+          course: record.curso,
+          time: record.time
+        },
+        onClose: resetEntryUI
+      });
+    };
+
+    const copyEmails = async () => {
+      const emails = getMonthlyReport(loadState()).map(item => item.email).join(', ');
+      if (!emails) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'Todavía no hay correos para copiar porque ningún alumno supera el umbral mensual.';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(emails);
+        reportStatusBox.className = 'status show success';
+        reportStatusBox.innerHTML = 'Lista de correos copiada al portapapeles.';
+      } catch {
+        reportStatusBox.className = 'status show error';
+        reportStatusBox.innerHTML = 'No se pudo copiar automáticamente. Prueba nuevamente o exporta el CSV.';
+      }
+    };
+
+    const exportEmails = () => {
+      const report = getMonthlyReport(loadState());
+      if (!report.length) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'No hay alumnos sobre el umbral mensual para exportar.';
+        return;
+      }
+      const lines = ['nombre,rut,curso,correo,atrasos_mes'];
+      report.forEach(item => lines.push(`"${item.nombre}","${item.rutFull}","${item.curso}","${item.email}",${item.count}`));
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `correos_atrasos_${monthKey()}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = 'Se exportó un CSV con los correos del informe mensual.';
+    };
+
+    const simulateSend = () => {
+      const state = loadState();
+      const report = getMonthlyReport(state);
+      if (!report.length) {
+        reportStatusBox.className = 'status info show';
+        reportStatusBox.innerHTML = 'No hay alumnos sobre el umbral mensual, así que no hay notificación que simular.';
+        return;
+      }
+      const now = new Date().toISOString();
+      const notifications = [...state.notifications];
+      report.forEach(item => {
+        const existing = notifications.find(n => n.studentId === item.studentId);
+        if (existing) {
+          existing.sentAt = now;
+        } else {
+          notifications.push({ studentId: item.studentId, sentAt: now });
+        }
+      });
+      saveState({ ...state, notifications });
+      renderReport();
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = `Se simuló el envío de notificación para <strong>${report.length}</strong> alumno(s).`;
+    };
+
+    const resetMonth = () => {
+      if (!confirm('Esto borrará los registros y notificaciones del mes actual en esta demo.')) return;
+      localStorage.removeItem(storageKey());
+      studentCard.classList.remove('show');
+      clearStatus();
+      refreshAll();
+      reportStatusBox.className = 'status show success';
+      reportStatusBox.innerHTML = 'La demo mensual fue reiniciada en este dispositivo.';
+    };
+
+    const showLoginScreen = () => {
+      loginScreen.hidden = false;
+      appShell.hidden = true;
+      window.setTimeout(() => {
+        loginUser.focus();
+      }, 50);
+    };
+
+    const showAppShell = () => {
+      loginScreen.hidden = true;
+      appShell.hidden = false;
+    };
+
+    const handleLogin = (event) => {
+      event.preventDefault();
+      const user = (loginUser.value || '').trim();
+      const pass = loginPassword.value || '';
+
+      if (user === LOGIN_USER && pass === LOGIN_PASSWORD) {
+        sessionStorage.setItem(LOGIN_STORAGE_KEY, 'ok');
+        loginError.classList.remove('show');
+        showAppShell();
+        updateClock();
+        return;
+      }
+
+      loginError.textContent = 'Usuario o clave incorrectos.';
+      loginError.classList.add('show');
+      loginPassword.value = '';
+      loginPassword.focus();
+      if (navigator.vibrate) navigator.vibrate([120, 70, 120]);
+    };
+
+    const restoreAccess = () => {
+      if (sessionStorage.getItem(LOGIN_STORAGE_KEY) === 'ok') {
+        showAppShell();
+      } else {
+        showLoginScreen();
+      }
+    };
+
+    const updateClock = () => {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = formatTime(now);
+      document.getElementById('liveDate').textContent = formatDateLong(now);
+    };
+
+    const stopScanner = () => {
+      scanLoopActive = false;
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+      }
+      qrVideo.srcObject = null;
+      scanBox.classList.remove('active');
+      scanBox.setAttribute('aria-hidden', 'true');
+      scanButton.textContent = '📷 Escanear QR';
+    };
+
+    const processScannedText = (value) => {
+      const digits = sanitizeRutNumber(String(value || ''));
+      if (!digits) return false;
+      rutInput.value = digits;
+      renderStatus(`QR leído correctamente. RUT numérico capturado: <strong>${digits}</strong>. Registrando ingreso automáticamente...`, 'success');
+      stopScanner();
+      window.setTimeout(() => {
+        registerCurrentRut();
+      }, 120);
+      return true;
+    };
+
+    const startScanner = async () => {
+      if (scanLoopActive) {
+        stopScanner();
+        return;
+      }
+
+      if (!window.isSecureContext) {
+        renderStatus('La cámara solo funciona en una conexión segura HTTPS. Revisa el candado del sitio o usa la digitación manual.', 'error');
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        renderStatus('Este navegador no permite acceder a la cámara. Usa la digitación manual.', 'error');
+        return;
+      }
+
+      try {
+        activeStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+
+        qrVideo.srcObject = activeStream;
+        await qrVideo.play();
+        scanLoopActive = true;
+        scanBox.classList.add('active');
+        scanBox.setAttribute('aria-hidden', 'false');
+        scanButton.textContent = '✖ Cerrar cámara';
+        scanNote.textContent = 'Apunta al QR con el número de RUT. La lectura se completa automáticamente.';
+        scanCloseButton.focus();
+
+        const hasNativeQr = 'BarcodeDetector' in window;
+        let detector = null;
+        if (hasNativeQr) {
+          try {
+            detector = new BarcodeDetector({ formats: ['qr_code'] });
+          } catch {
+            detector = null;
+          }
+        }
+
+        const tick = async () => {
+          if (!scanLoopActive) return;
+
+          try {
+            let rawValue = '';
+
+            if (detector) {
+              const barcodes = await detector.detect(qrVideo);
+              if (barcodes.length) {
+                rawValue = barcodes[0].rawValue || '';
+              }
+            } else if (window.jsQR && qrVideo.readyState >= 2) {
+              const canvas = qrCanvas;
+              const width = qrVideo.videoWidth || 0;
+              const height = qrVideo.videoHeight || 0;
+
+              if (width && height) {
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(qrVideo, 0, 0, width, height);
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const code = window.jsQR(imageData.data, width, height, { inversionAttempts: 'dontInvert' });
+                if (code && code.data) {
+                  rawValue = code.data;
+                }
+              }
+            }
+
+            if (rawValue && processScannedText(rawValue)) return;
+          } catch {
+            // keep scanning quietly
+          }
+
+          requestAnimationFrame(tick);
+        };
+
+        requestAnimationFrame(tick);
+      } catch (error) {
+        stopScanner();
+
+        const permissionDenied = error && (
+          error.name === 'NotAllowedError' ||
+          error.name === 'PermissionDeniedError' ||
+          error.name === 'SecurityError'
+        );
+
+        if (permissionDenied) {
+          renderStatus('El navegador bloqueó el permiso de cámara. Autoriza el acceso y vuelve a intentar.', 'error');
+          return;
+        }
+
+        renderStatus('No se pudo iniciar la cámara. Revisa permisos del navegador o usa la digitación manual.', 'error');
+      }
+    };
+
+    loginForm.addEventListener('submit', handleLogin);
+    registerButton.addEventListener('click', registerCurrentRut);
+    clearButton.addEventListener('click', () => { rutInput.value = ''; clearStatus(); });
+    copyEmailsButton.addEventListener('click', copyEmails);
+    exportEmailsButton.addEventListener('click', exportEmails);
+    simulateSendButton.addEventListener('click', simulateSend);
+    resetMonthButton.addEventListener('click', resetMonth);
+    scanButton.addEventListener('click', startScanner);
+    scanCloseButton.addEventListener('click', stopScanner);
+    scanBox.addEventListener('click', (event) => {
+      if (event.target === scanBox) stopScanner();
+    });
+    modalActionButton.addEventListener('click', hideModal);
+    feedbackModal.addEventListener('click', (event) => {
+      if (event.target === feedbackModal) hideModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && feedbackModal.classList.contains('show')) hideModal();
+      if (event.key === 'Escape' && scanLoopActive) stopScanner();
+    });
+
+    rutInput.addEventListener('input', () => {
+      rutInput.value = sanitizeRutNumber(rutInput.value);
+    });
+
+    window.addEventListener('beforeunload', stopScanner);
+
+    createKeypad();
+    renderSamples();
+    refreshAll();
+    restoreAccess();
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
